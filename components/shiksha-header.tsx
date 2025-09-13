@@ -178,7 +178,7 @@ function MobileMenu() {
   };
 
   return (
-    <div className="md:hidden relative">
+    <div className="xl:hidden relative">
       <Button
         variant="ghost"
         size="sm"
@@ -369,8 +369,8 @@ export default function ShikshaHeader() {
             </span>
           </Link>
           
-          {/* Navigation - Hidden on smaller screens, shown on medium+ */}
-          <nav className="hidden lg:flex items-center space-x-6">
+          {/* Navigation - Hidden on smaller screens, shown on large+ */}
+          <nav className="hidden xl:flex items-center space-x-6">
             <Link href="/teachers" className="text-sm font-medium hover:text-blue-600 transition-colors whitespace-nowrap">
               Find Tutors
             </Link>
@@ -395,8 +395,8 @@ export default function ShikshaHeader() {
               <ThemeControls />
             </div>
             
-            {/* Desktop User Menu */}
-            <div className="hidden md:block">
+            {/* Desktop User Menu - Show on large screens */}
+            <div className="hidden xl:block">
               <Suspense fallback={<div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />}>
                 <UserMenu />
               </Suspense>

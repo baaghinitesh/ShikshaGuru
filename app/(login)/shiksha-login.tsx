@@ -236,8 +236,10 @@ export function ShikshaLogin({ mode = 'signin' }: ShikshaLoginProps) {
             <div className="mt-4 text-center">
               <Link
                 href={`${mode === 'signin' ? '/sign-up' : '/sign-in'}${
-                  redirect ? `?redirect=${redirect}` : ''
-                }${formData.role ? `&role=${formData.role}` : ''}`}
+                  redirect || formData.role ? '?' : ''
+                }${redirect ? `redirect=${redirect}` : ''}${
+                  redirect && formData.role ? '&' : ''
+                }${formData.role ? `role=${formData.role}` : ''}`}
                 className="text-blue-600 hover:text-blue-500 font-medium"
               >
                 {mode === 'signin' ? 'Create an account' : 'Sign in instead'}

@@ -245,7 +245,7 @@ const AIChatAssistant: React.FC = () => {
     return (
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 z-50"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 z-50"
         size="lg"
       >
         <MessageCircle className="w-6 h-6" />
@@ -254,14 +254,14 @@ const AIChatAssistant: React.FC = () => {
   }
 
   return (
-    <Card className={`fixed bottom-6 right-6 w-96 shadow-xl border-0 z-50 transition-all duration-200 ${
-      isMinimized ? 'h-16' : 'h-[600px]'
+    <Card className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-[calc(100vw-2rem)] sm:w-96 max-w-96 shadow-xl border-0 z-50 transition-all duration-200 ${
+      isMinimized ? 'h-16' : 'h-[600px] max-h-[calc(100vh-2rem)]'
     }`}>
       <CardHeader className="pb-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-t-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Bot className="w-5 h-5" />
-            <CardTitle className="text-lg">ShikshaGuru Assistant</CardTitle>
+            <CardTitle className="text-base sm:text-lg truncate">ShikshaGuru Assistant</CardTitle>
           </div>
           <div className="flex items-center gap-1">
             <Button
