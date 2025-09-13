@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import WhatsAppService from '@/lib/services/whatsapp';
 
 interface ContactInfo {
@@ -79,11 +79,7 @@ export default function WhatsAppContact({
 
   const handleSendMessage = (useWhatsAppWeb = false) => {
     if (!message.trim()) {
-      toast({
-        title: 'Message Required',
-        description: 'Please enter a message before sending.',
-        variant: 'destructive'
-      });
+      toast.error('Please enter a message before sending.');
       return;
     }
 
@@ -97,18 +93,12 @@ export default function WhatsAppContact({
     
     setIsOpen(false);
     
-    toast({
-      title: 'Opening WhatsApp',
-      description: `Redirecting to WhatsApp to contact ${contact.name}`,
-    });
+    toast.success(`Redirecting to WhatsApp to contact ${contact.name}`);
   };
 
   const handleCopyMessage = () => {
     navigator.clipboard.writeText(message);
-    toast({
-      title: 'Message Copied',
-      description: 'Message copied to clipboard',
-    });
+    toast.success('Message copied to clipboard');
   };
 
   const handleQuickContact = () => {
@@ -116,10 +106,7 @@ export default function WhatsAppContact({
     const finalMessage = WhatsAppService.addSignature(quickMessage);
     WhatsAppService.openWhatsApp(contact.whatsappNumber!, finalMessage);
     
-    toast({
-      title: 'Opening WhatsApp',
-      description: `Sending quick message to ${contact.name}`,
-    });
+    toast.success(`Sending quick message to ${contact.name}`);
   };
 
   const formattedNumber = WhatsAppService.formatPhoneNumber(contact.whatsappNumber);

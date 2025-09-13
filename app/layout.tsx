@@ -7,9 +7,9 @@ import { Manrope } from 'next/font/google';
 import { ToastContainer } from 'react-toastify';
 import { Toaster } from 'sonner';
 import ShikshaHeader from '@/components/shiksha-header';
-import AIChatAssistantPlaceholder from '@/components/ai-chat-assistant-placeholder';
+import AIChatAssistant from '@/components/ai-chat-assistant';
 import { ThemeProvider } from '@/contexts/theme-context';
-import { AuthProvider } from '@/contexts/auth-context';
+import { AuthProvider } from '@/contexts/auth-context-simple';
 import { SocketProvider } from '@/lib/contexts/SocketContext';
 import { config } from '@/lib/config';
 
@@ -44,7 +44,7 @@ export default function RootLayout({
                 <ShikshaHeader />
                 {children}
               </div>
-              <AIChatAssistantPlaceholder />
+              <AIChatAssistant />
             </SocketProvider>
             <ToastContainer
               position="top-right"

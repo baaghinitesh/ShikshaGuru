@@ -4,7 +4,7 @@ import { useState, useRef, useCallback } from 'react';
 import { Upload, X, FileText, Image, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 interface FileUploadProps {
   endpoint: 'file' | 'image' | 'avatar' | 'multiple';
@@ -58,11 +58,7 @@ export default function FileUpload({
     const validFiles: File[] = [];
     for (const file of fileArray) {
       if (file.size > maxSize) {
-        toast({
-          title: 'File too large',
-          description: `${file.name} is larger than ${Math.round(maxSize / 1024 / 1024)}MB`,
-          variant: 'destructive'
-        });
+        toast.error(`${file.name} is larger than ${Math.round(maxSize / 1024 / 1024)}MB`);
         continue;
       }
       validFiles.push(file);
@@ -131,11 +127,7 @@ export default function FileUpload({
         ));
 
         onUploadError?.(errorMessage);
-        toast({
-          title: 'Upload failed',
-          description: `Failed to upload ${file.name}: ${errorMessage}`,
-          variant: 'destructive'
-        });
+        toast.error(`Failed to upload ${file.name}: ${errorMessage}`);
 
         return null;
       }
@@ -147,10 +139,7 @@ export default function FileUpload({
       
       if (successfulUploads.length > 0) {
         onUploadComplete?.(successfulUploads);
-        toast({
-          title: 'Upload successful',
-          description: `${successfulUploads.length} file(s) uploaded successfully`
-        });
+        toast.success(`${successfulUploads.length} file(s) uploaded successfully`);
       }
     } catch (error) {
       console.error('Upload error:', error);
