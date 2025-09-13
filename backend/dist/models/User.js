@@ -48,8 +48,7 @@ const locationSchema = new mongoose_1.Schema({
     },
     coordinates: {
         type: [Number], // [longitude, latitude]
-        required: true,
-        index: '2dsphere'
+        required: true
     },
     address: String,
     city: String,
@@ -71,6 +70,11 @@ const userSchema = new mongoose_1.Schema({
         unique: true,
         sparse: true,
         match: [/^[6-9]\d{9}$/, 'Please enter a valid Indian phone number']
+    },
+    whatsappNumber: {
+        type: String,
+        sparse: true,
+        match: [/^\+?[1-9]\d{1,14}$/, 'Please enter a valid WhatsApp number with country code']
     },
     password: {
         type: String,
@@ -125,6 +129,7 @@ const userSchema = new mongoose_1.Schema({
         },
         privacy: {
             showPhone: { type: Boolean, default: false },
+            showWhatsApp: { type: Boolean, default: true },
             showEmail: { type: Boolean, default: false },
             showLocation: { type: Boolean, default: true }
         },
@@ -156,6 +161,9 @@ const userSchema = new mongoose_1.Schema({
 });
 // Virtual for full name
 userSchema.virtual('fullName').get(function () {
+    if (!this.profile?.firstName || !this.profile?.lastName) {
+        return this.email || 'Unknown User';
+    }
     return `${this.profile.firstName} ${this.profile.lastName}`;
 });
 // Hash password before saving
@@ -181,8 +189,6 @@ userSchema.methods.toJSON = function () {
     return userObject;
 };
 // Indexes
-userSchema.index({ email: 1 });
-userSchema.index({ phone: 1 });
 userSchema.index({ role: 1 });
 userSchema.index({ status: 1 });
 userSchema.index({ 'location.coordinates': '2dsphere' });

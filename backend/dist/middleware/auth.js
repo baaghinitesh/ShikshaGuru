@@ -3,7 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkOwnership = exports.optionalAuth = exports.authorize = exports.protect = void 0;
+exports.optionalAuthMiddleware = exports.authMiddleware = exports.checkOwnership = exports.authorize = exports.protect = void 0;
+exports.optionalAuth = optionalAuth;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const User_1 = require("../models/User");
 const types_1 = require("../types");
@@ -75,7 +76,7 @@ const authorize = (...roles) => {
 };
 exports.authorize = authorize;
 // Optional authentication - doesn't fail if no token
-const optionalAuth = async (req, res, next) => {
+async function optionalAuth(req, res, next) {
     try {
         let token;
         // Get token from header
@@ -102,8 +103,7 @@ const optionalAuth = async (req, res, next) => {
     catch (error) {
         next(error);
     }
-};
-exports.optionalAuth = optionalAuth;
+}
 // Check if user owns resource or is admin
 const checkOwnership = (resourceUserField = 'userId') => {
     return (req, res, next) => {
@@ -129,4 +129,7 @@ const checkOwnership = (resourceUserField = 'userId') => {
     };
 };
 exports.checkOwnership = checkOwnership;
+// Aliases for consistency
+exports.authMiddleware = exports.protect;
+exports.optionalAuthMiddleware = optionalAuth;
 //# sourceMappingURL=auth.js.map

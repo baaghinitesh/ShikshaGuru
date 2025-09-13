@@ -54,7 +54,7 @@ const register = async (req, res, next) => {
                 errors: errors.array()
             });
         }
-        const { email, password, phone, role = types_1.UserRole.STUDENT, profile, location } = req.body;
+        const { email, password, phone, whatsappNumber, role = types_1.UserRole.STUDENT, profile, location } = req.body;
         // Check if user already exists
         const existingUser = await models_1.User.findOne({
             $or: [
@@ -73,6 +73,7 @@ const register = async (req, res, next) => {
             email,
             password,
             phone,
+            whatsappNumber,
             role,
             profile,
             location,

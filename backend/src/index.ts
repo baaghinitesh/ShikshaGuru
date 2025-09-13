@@ -32,7 +32,7 @@ const app = express();
 const server = createServer(app);
 const io = new SocketIOServer(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: [process.env.FRONTEND_URL || "http://localhost:3000", "http://localhost:3003", "http://localhost:3004"],
     credentials: true
   }
 });
@@ -59,6 +59,8 @@ app.use('/api/', limiter);
 app.use(cors({
   origin: [
     'http://localhost:3000',
+    'http://localhost:3003',
+    'http://localhost:3004',
     '*.clackypaas.com',
     process.env.FRONTEND_URL || 'http://localhost:3000'
   ],

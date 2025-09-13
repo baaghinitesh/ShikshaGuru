@@ -77,7 +77,6 @@ const blogSchema = new mongoose_1.Schema({
     slug: {
         type: String,
         required: true,
-        unique: true,
         lowercase: true,
         trim: true,
         match: [/^[a-z0-9-]+$/, 'Slug can only contain lowercase letters, numbers, and hyphens']
@@ -209,7 +208,7 @@ blogSchema.pre('save', function (next) {
     next();
 });
 // Indexes
-blogSchema.index({ slug: 1 });
+blogSchema.index({ slug: 1 }, { unique: true });
 blogSchema.index({ author: 1 });
 blogSchema.index({ status: 1 });
 blogSchema.index({ category: 1 });

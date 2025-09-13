@@ -27,8 +27,7 @@ const locationSchema = new Schema({
   },
   coordinates: {
     type: [Number], // [longitude, latitude]
-    required: true,
-    index: '2dsphere'
+    required: true
   },
   address: String,
   city: String,

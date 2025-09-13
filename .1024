@@ -5,6 +5,5 @@
 dependency_command: npm install && cd backend && npm install
 
 # Commands to run when "Run" button clicked
-run_command:
-  - npm run dev
-  - cd backend && npm run dev
+# Frontend on port 3000 and backend on port 5000 (in background)
+run_command: npm run dev & cd backend && npm run dev

@@ -215,18 +215,7 @@ class APIClient {
     return this.get('/search/filters');
   }
 
-  // Chat methods
-  async getChats() {
-    return this.get('/chat');
-  }
 
-  async createChat(data: any) {
-    return this.post('/chat', data);
-  }
-
-  async getChatMessages(chatId: string, params?: any) {
-    return this.get(`/chat/${chatId}/messages`, { params });
-  }
 
   // Blog methods
   async getBlogs(params?: any) {

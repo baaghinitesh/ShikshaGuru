@@ -50,8 +50,7 @@ const locationSchema = new Schema({
   },
   coordinates: {
     type: [Number], // [longitude, latitude]
-    required: true,
-    index: '2dsphere'
+    required: true
   },
   address: String,
   city: String,
@@ -239,7 +238,6 @@ teacherSchema.pre('save', function(this: any, next) {
 });
 
 // Indexes
-teacherSchema.index({ userId: 1 });
 teacherSchema.index({ 'location.coordinates': '2dsphere' });
 teacherSchema.index({ 'profile.rating': -1 });
 teacherSchema.index({ 'profile.experience': -1 });

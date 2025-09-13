@@ -9,8 +9,7 @@ const locationSchema = new Schema({
   },
   coordinates: {
     type: [Number], // [longitude, latitude]
-    required: true,
-    index: '2dsphere'
+    required: true
   },
   address: String,
   city: String,
@@ -120,7 +119,6 @@ studentSchema.pre('save', function(this: any, next) {
 });
 
 // Indexes
-studentSchema.index({ userId: 1 });
 studentSchema.index({ 'location.coordinates': '2dsphere' });
 studentSchema.index({ 'profile.grade': 1 });
 studentSchema.index({ 'preferences.budget.min': 1 });

@@ -10,8 +10,7 @@ const locationSchema = new Schema({
   },
   coordinates: {
     type: [Number], // [longitude, latitude]
-    required: true,
-    index: '2dsphere'
+    required: true
   },
   address: String,
   city: String,
@@ -157,8 +156,6 @@ userSchema.methods.toJSON = function() {
 };
 
 // Indexes
-userSchema.index({ email: 1 });
-userSchema.index({ phone: 1 });
 userSchema.index({ role: 1 });
 userSchema.index({ status: 1 });
 userSchema.index({ 'location.coordinates': '2dsphere' });

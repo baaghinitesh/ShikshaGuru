@@ -1,4 +1,5 @@
 import { Document } from 'mongoose';
+import { Request } from 'express';
 export declare enum UserRole {
     GUEST = "guest",
     STUDENT = "student",
@@ -55,6 +56,7 @@ export interface IDocument {
 export interface IUser extends Document {
     email: string;
     phone?: string;
+    whatsappNumber?: string;
     password?: string;
     googleId?: string;
     role: UserRole;
@@ -76,6 +78,7 @@ export interface IUser extends Document {
         };
         privacy: {
             showPhone: boolean;
+            showWhatsApp: boolean;
             showEmail: boolean;
             showLocation: boolean;
         };
@@ -90,6 +93,9 @@ export interface IUser extends Document {
     emailVerified: boolean;
     phoneVerified: boolean;
     comparePassword(candidatePassword: string): Promise<boolean>;
+}
+export interface AuthenticatedRequest extends Request {
+    user?: IUser;
 }
 export interface ITeacher extends Document {
     userId: string;
