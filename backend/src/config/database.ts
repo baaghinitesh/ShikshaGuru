@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const connectDB = async () => {
   try {
-    const mongoURI = process.env.MONGO_URI || 'mongodb://admin:kdOwqsCH@127.0.0.1:27017/shikshaguru?authSource=admin';
+    const mongoURI = process.env.MONGO_URI || 'mongodb://admin:PgvwjJlT@127.0.0.1:27017/shikshaguru?authSource=admin';
     
     const conn = await mongoose.connect(mongoURI, {
       // These options are no longer needed in newer versions of mongoose

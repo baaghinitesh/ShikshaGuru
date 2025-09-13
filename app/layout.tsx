@@ -9,7 +9,7 @@ import { Toaster } from 'sonner';
 import ShikshaHeader from '@/components/shiksha-header';
 import AIChatAssistant from '@/components/ai-chat-assistant';
 import { ThemeProvider } from '@/contexts/theme-context';
-import { AuthProvider } from '@/contexts/auth-context-simple';
+import { AuthProvider } from '@/contexts/auth-context';
 import { SocketProvider } from '@/lib/contexts/SocketContext';
 import { config } from '@/lib/config';
 
