@@ -82,7 +82,7 @@ export const authorize = (...roles: UserRole[]) => {
 };
 
 // Optional authentication - doesn't fail if no token
-export const optionalAuth = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export async function optionalAuth(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     let token;
 
@@ -112,7 +112,7 @@ export const optionalAuth = async (req: AuthRequest, res: Response, next: NextFu
   } catch (error) {
     next(error);
   }
-};
+}
 
 // Check if user owns resource or is admin
 export const checkOwnership = (resourceUserField: string = 'userId') => {
@@ -142,3 +142,9 @@ export const checkOwnership = (resourceUserField: string = 'userId') => {
     next();
   };
 };
+
+// Aliases for consistency
+export const authMiddleware = protect;
+export const optionalAuthMiddleware = optionalAuth;
+
+

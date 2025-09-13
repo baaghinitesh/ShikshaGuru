@@ -348,16 +348,30 @@ export default function CreateTeacherProfile() {
                   />
                 </div>
                 
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.hidePhoneNumber}
-                    onChange={(e) => handleInputChange('hidePhoneNumber', e.target.checked)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <label className="ml-2 text-sm text-gray-700">
-                    Hide phone number from public profile
-                  </label>
+                <div className="space-y-3">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.hidePhoneNumber}
+                      onChange={(e) => handleInputChange('hidePhoneNumber', e.target.checked)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label className="ml-2 text-sm text-gray-700">
+                      Hide phone number from public profile
+                    </label>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.hideWhatsAppNumber || false}
+                      onChange={(e) => handleInputChange('hideWhatsAppNumber', e.target.checked)}
+                      className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                    />
+                    <label className="ml-2 text-sm text-gray-700">
+                      Hide WhatsApp number from public profile
+                    </label>
+                  </div>
                 </div>
               </div>
               

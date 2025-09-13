@@ -1,4 +1,5 @@
 import { Document } from 'mongoose';
+import { Request } from 'express';
 
 // User Types
 export enum UserRole {
@@ -70,6 +71,7 @@ export interface IDocument {
 export interface IUser extends Document {
   email: string;
   phone?: string;
+  whatsappNumber?: string;
   password?: string;
   googleId?: string;
   role: UserRole;
@@ -91,6 +93,7 @@ export interface IUser extends Document {
     };
     privacy: {
       showPhone: boolean;
+      showWhatsApp: boolean;
       showEmail: boolean;
       showLocation: boolean;
     };
@@ -107,6 +110,11 @@ export interface IUser extends Document {
   
   // Methods
   comparePassword(candidatePassword: string): Promise<boolean>;
+}
+
+// Request Types
+export interface AuthenticatedRequest extends Request {
+  user?: IUser;
 }
 
 export interface ITeacher extends Document {

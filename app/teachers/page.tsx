@@ -20,6 +20,7 @@ import {
 import Link from 'next/link';
 import { apiClient } from '@/lib/api/client';
 import { useAuth } from '@/contexts/auth-context';
+import WhatsAppContact from '@/components/whatsapp-contact';
 
 interface Teacher {
   _id: string;
@@ -30,6 +31,7 @@ interface Teacher {
       lastName: string;
       avatar?: string;
     };
+    whatsappNumber?: string;
   };
   profile: {
     title: string;
@@ -94,7 +96,8 @@ export default function TeachersPage() {
               firstName: 'Dr. Priya',
               lastName: 'Sharma',
               avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b05b?w=150'
-            }
+            },
+            whatsappNumber: '+91 98765 43210'
           },
           profile: {
             title: 'Dr.',
@@ -122,7 +125,8 @@ export default function TeachersPage() {
               firstName: 'Rajesh',
               lastName: 'Kumar',
               avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150'
-            }
+            },
+            whatsappNumber: '+91 87654 32109'
           },
           profile: {
             title: 'Mr.',
@@ -150,7 +154,8 @@ export default function TeachersPage() {
               firstName: 'Anita',
               lastName: 'Singh',
               avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150'
-            }
+            },
+            whatsappNumber: '+91 76543 21098'
           },
           profile: {
             title: 'Ms.',
@@ -180,12 +185,7 @@ export default function TeachersPage() {
     }
   };
 
-  const handleWhatsAppClick = (teacher: Teacher) => {
-    const message = `Hi ${teacher.profile.title} ${teacher.userId.profile.firstName}, I found your profile on ShikshaGuru and I'm interested in your tutoring services. Could we discuss further?`;
-    const encodedMessage = encodeURIComponent(message);
-    // This would need actual phone number - for demo purposes
-    window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
-  };
+  // WhatsApp contact now handled by WhatsAppContact component
 
   if (loading) {
     return (
@@ -345,13 +345,19 @@ export default function TeachersPage() {
                         <MessageCircle className="h-4 w-4 mr-1" />
                         Message
                       </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => handleWhatsAppClick(teacher)}
-                      >
-                        <Phone className="h-4 w-4" />
-                      </Button>
+                      <WhatsAppContact
+                        contact={{
+                          name: `${teacher.profile.title} ${teacher.userId.profile.firstName} ${teacher.userId.profile.lastName}`,
+                          whatsappNumber: teacher.userId.whatsappNumber,
+                          role: 'teacher',
+                          subjects: teacher.subjects.map(s => s.name),
+                          experience: teacher.profile.experience,
+                          location: teacher.location,
+                          hourlyRate: teacher.profile.hourlyRate
+                        }}
+                        variant="icon"
+                        showTemplates={true}
+                      />
                     </>
                   ) : (
                     <Button asChild size="sm" className="flex-1">

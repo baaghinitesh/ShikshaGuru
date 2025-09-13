@@ -60,7 +60,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       });
     }
 
-    const { email, password, phone, role = UserRole.STUDENT, profile, location } = req.body;
+    const { email, password, phone, whatsappNumber, role = UserRole.STUDENT, profile, location } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({
@@ -82,6 +82,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       email,
       password,
       phone,
+      whatsappNumber,
       role,
       profile,
       location,

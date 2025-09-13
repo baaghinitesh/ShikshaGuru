@@ -237,6 +237,65 @@ class APIClient {
     return this.get(`/blogs/${slug}`);
   }
 
+  async getBlogCategories() {
+    return this.get('/blogs/categories');
+  }
+
+  async getBlogTags(limit?: number) {
+    return this.get('/blogs/tags', { params: { limit } });
+  }
+
+  // Admin blog management methods
+  async createBlog(data: {
+    title: string;
+    content: string;
+    excerpt: string;
+    featuredImage?: string;
+    category: string;
+    tags?: string[];
+    status?: 'draft' | 'published' | 'archived';
+    seo?: {
+      metaTitle?: string;
+      metaDescription?: string;
+      keywords?: string[];
+    };
+  }) {
+    return this.post('/blogs', data);
+  }
+
+  async updateBlog(id: string, data: {
+    title?: string;
+    content?: string;
+    excerpt?: string;
+    featuredImage?: string;
+    category?: string;
+    tags?: string[];
+    status?: 'draft' | 'published' | 'archived';
+    seo?: {
+      metaTitle?: string;
+      metaDescription?: string;
+      keywords?: string[];
+    };
+  }) {
+    return this.put(`/blogs/${id}`, data);
+  }
+
+  async deleteBlog(id: string) {
+    return this.delete(`/blogs/${id}`);
+  }
+
+  // Blog interaction methods
+  async likeBlog(id: string) {
+    return this.post(`/blogs/${id}/like`);
+  }
+
+  async commentOnBlog(id: string, data: {
+    content: string;
+    parentCommentIndex?: number;
+  }) {
+    return this.post(`/blogs/${id}/comment`, data);
+  }
+
   // Testimonial methods
   async getTestimonials(params?: any) {
     return this.get('/testimonials', { params });
@@ -316,6 +375,19 @@ class APIClient {
 
   async searchMessages(chatId: string, query: string, params?: any) {
     return this.get(`/chat/${chatId}/messages/search`, { params: { query, ...params } });
+  }
+
+  // AI Chat methods
+  async startAIConversation(data: { message?: string; conversationId?: string }) {
+    return this.post('/ai-chat/conversation', data);
+  }
+
+  async getAIConversation(conversationId: string) {
+    return this.get(`/ai-chat/conversation/${conversationId}`);
+  }
+
+  async executeAIAction(data: { actionId: string; actionData?: any; conversationId?: string }) {
+    return this.post('/ai-chat/action', data);
   }
 }
 

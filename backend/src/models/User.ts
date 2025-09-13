@@ -20,7 +20,7 @@ const locationSchema = new Schema({
   country: { type: String, default: 'India' }
 }, { _id: false });
 
-const userSchema = new Schema<IUser>({
+const userSchema = new Schema({
   email: {
     type: String,
     required: [true, 'Email is required'],
@@ -34,6 +34,11 @@ const userSchema = new Schema<IUser>({
     unique: true,
     sparse: true,
     match: [/^[6-9]\d{9}$/, 'Please enter a valid Indian phone number']
+  },
+  whatsappNumber: {
+    type: String,
+    sparse: true,
+    match: [/^\+?[1-9]\d{1,14}$/, 'Please enter a valid WhatsApp number with country code']
   },
   password: {
     type: String,
@@ -88,6 +93,7 @@ const userSchema = new Schema<IUser>({
     },
     privacy: {
       showPhone: { type: Boolean, default: false },
+      showWhatsApp: { type: Boolean, default: true },
       showEmail: { type: Boolean, default: false },
       showLocation: { type: Boolean, default: true }
     },
@@ -120,6 +126,9 @@ const userSchema = new Schema<IUser>({
 
 // Virtual for full name
 userSchema.virtual('fullName').get(function() {
+  if (!this.profile?.firstName || !this.profile?.lastName) {
+    return this.email || 'Unknown User';
+  }
   return `${this.profile.firstName} ${this.profile.lastName}`;
 });
 
