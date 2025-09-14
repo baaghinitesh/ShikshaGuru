@@ -41,3 +41,26 @@ next-env.d.ts
 # Docker
 postgres_data/
 .env*.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Backend specific
+backend/.env
+backend/uploads/
+backend/logs/

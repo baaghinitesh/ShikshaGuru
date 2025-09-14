@@ -1,16 +1,15 @@
 'use server';
 
 import { z } from 'zod';
-import { eq } from 'drizzle-orm';
-import { db } from '@/lib/db/drizzle';
+import connectDB from '@/lib/db/mongodb';
 import {
   User,
-  users,
-  activityLogs,
+  ActivityLog,
+  type IUser,
   type NewUser,
   type NewActivityLog,
   ActivityType,
-} from '@/lib/db/schema';
+} from '@/lib/db/models';
 import { comparePasswords, hashPassword, setSession } from '@/lib/auth/session';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
@@ -21,18 +20,21 @@ import {
 } from '@/lib/auth/middleware';
 
 async function logActivity(
-  userId: number,
+  userId: string,
   type: ActivityType,
   ipAddress?: string,
   metadata?: string
 ) {
-  const newActivity: NewActivityLog = {
+  await connectDB();
+  
+  const newActivity = new ActivityLog({
     userId,
     action: type,
     ipAddress: ipAddress || '',
     metadata: metadata || null
-  };
-  await db.insert(activityLogs).values(newActivity);
+  });
+  
+  await newActivity.save();
 }
 
 const signInSchema = z.object({
@@ -43,41 +45,46 @@ const signInSchema = z.object({
 export const signIn = validatedAction(signInSchema, async (data, formData) => {
   const { email, password } = data;
 
-  const foundUser = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, email))
-    .limit(1);
+  await connectDB();
 
-  if (foundUser.length === 0) {
+  try {
+    const foundUser = await User.findOne({ email }).exec();
+
+    if (!foundUser) {
+      return {
+        error: 'Invalid email or password. Please try again.',
+        email,
+        password
+      };
+    }
+
+    const isPasswordValid = await comparePasswords(
+      password,
+      foundUser.passwordHash
+    );
+
+    if (!isPasswordValid) {
+      return {
+        error: 'Invalid email or password. Please try again.',
+        email,
+        password
+      };
+    }
+
+    await Promise.all([
+      setSession(foundUser),
+      logActivity(foundUser._id.toString(), ActivityType.SIGN_IN)
+    ]);
+
+    redirect('/');
+  } catch (error) {
+    console.error('Sign in error:', error);
     return {
-      error: 'Invalid email or password. Please try again.',
+      error: 'An error occurred during sign in. Please try again.',
       email,
       password
     };
   }
-
-  const user = foundUser[0];
-
-  const isPasswordValid = await comparePasswords(
-    password,
-    user.passwordHash
-  );
-
-  if (!isPasswordValid) {
-    return {
-      error: 'Invalid email or password. Please try again.',
-      email,
-      password
-    };
-  }
-
-  await Promise.all([
-    setSession(user),
-    logActivity(user.id, ActivityType.SIGN_IN)
-  ]);
-
-  redirect('/');
 });
 
 const signUpSchema = z.object({
@@ -88,49 +95,58 @@ const signUpSchema = z.object({
 export const signUp = validatedAction(signUpSchema, async (data, formData) => {
   const { email, password } = data;
 
-  const existingUser = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, email))
-    .limit(1);
+  await connectDB();
 
-  if (existingUser.length > 0) {
+  try {
+    const existingUser = await User.findOne({ email }).exec();
+
+    if (existingUser) {
+      return {
+        error: 'Failed to create user. Please try again.',
+        email,
+        password
+      };
+    }
+
+    const passwordHash = await hashPassword(password);
+
+    const newUser = new User({
+      email,
+      passwordHash,
+      name: null
+    });
+
+    const createdUser = await newUser.save();
+
+    if (!createdUser) {
+      return {
+        error: 'Failed to create user. Please try again.',
+        email,
+        password
+      };
+    }
+
+    await Promise.all([
+      logActivity(createdUser._id.toString(), ActivityType.SIGN_UP),
+      setSession(createdUser)
+    ]);
+
+    redirect('/');
+  } catch (error) {
+    console.error('Sign up error:', error);
     return {
       error: 'Failed to create user. Please try again.',
       email,
       password
     };
   }
-
-  const passwordHash = await hashPassword(password);
-
-  const newUser: NewUser = {
-    email,
-    passwordHash,
-    name: null
-  };
-
-  const [createdUser] = await db.insert(users).values(newUser).returning();
-
-  if (!createdUser) {
-    return {
-      error: 'Failed to create user. Please try again.',
-      email,
-      password
-    };
-  }
-
-  await Promise.all([
-    logActivity(createdUser.id, ActivityType.SIGN_UP),
-    setSession(createdUser)
-  ]);
-
-  redirect('/');
 });
 
 export async function signOut() {
-  const user = (await getUser()) as User;
-  await logActivity(user.id, ActivityType.SIGN_OUT);
+  const user = (await getUser()) as IUser;
+  if (user) {
+    await logActivity(user._id.toString(), ActivityType.SIGN_OUT);
+  }
   (await cookies()).delete('session');
 }
 
@@ -145,6 +161,15 @@ export const updatePassword = validatedActionWithUser(
   async (data, _, user) => {
     const { currentPassword, newPassword, confirmPassword } = data;
 
+    if (newPassword !== confirmPassword) {
+      return {
+        error: 'New passwords do not match.',
+        currentPassword,
+        newPassword,
+        confirmPassword
+      };
+    }
+
     const isPasswordValid = await comparePasswords(
       currentPassword,
       user.passwordHash
@@ -152,80 +177,46 @@ export const updatePassword = validatedActionWithUser(
 
     if (!isPasswordValid) {
       return {
+        error: 'Current password is incorrect.',
         currentPassword,
         newPassword,
-        confirmPassword,
-        error: 'Current password is incorrect.'
-      };
-    }
-
-    if (currentPassword === newPassword) {
-      return {
-        currentPassword,
-        newPassword,
-        confirmPassword,
-        error: 'New password must be different from the current password.'
-      };
-    }
-
-    if (confirmPassword !== newPassword) {
-      return {
-        currentPassword,
-        newPassword,
-        confirmPassword,
-        error: 'New password and confirmation password do not match.'
+        confirmPassword
       };
     }
 
     const newPasswordHash = await hashPassword(newPassword);
 
-    await Promise.all([
-      db
-        .update(users)
-        .set({ passwordHash: newPasswordHash })
-        .where(eq(users.id, user.id)),
-      logActivity(user.id, ActivityType.UPDATE_PASSWORD)
-    ]);
+    await connectDB();
 
-    return {
-      success: 'Password updated successfully.'
-    };
-  }
-);
+    try {
+      await User.findByIdAndUpdate(user._id, {
+        passwordHash: newPasswordHash,
+        updatedAt: new Date()
+      });
 
-const deleteAccountSchema = z.object({
-  password: z.string().min(8).max(100)
-});
+      await logActivity(user._id.toString(), ActivityType.UPDATE_PASSWORD);
 
-export const deleteAccount = validatedActionWithUser(
-  deleteAccountSchema,
-  async (data, _, user) => {
-    const { password } = data;
-
-    const isPasswordValid = await comparePasswords(password, user.passwordHash);
-    if (!isPasswordValid) {
       return {
-        password,
-        error: 'Incorrect password. Please try again.'
+        success: 'Password updated successfully.',
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      };
+    } catch (error) {
+      console.error('Update password error:', error);
+      return {
+        error: 'Failed to update password. Please try again.',
+        currentPassword,
+        newPassword,
+        confirmPassword
       };
     }
-
-    await Promise.all([
-      db
-        .update(users)
-        .set({ deletedAt: new Date() })
-        .where(eq(users.id, user.id)),
-      logActivity(user.id, ActivityType.DELETE_ACCOUNT)
-    ]);
-
-    (await cookies()).delete('session');
-    redirect('/sign-in');
   }
 );
 
 const updateAccountSchema = z.object({
   name: z.string().min(1).max(100),
-  email: z.string().email().min(3).max(255)
+  email: z.string().email()
 });
 
 export const updateAccount = validatedActionWithUser(
@@ -233,27 +224,82 @@ export const updateAccount = validatedActionWithUser(
   async (data, _, user) => {
     const { name, email } = data;
 
-    const existingUser = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, email))
-      .limit(1);
+    await connectDB();
 
-    if (existingUser.length > 0 && existingUser[0].id !== user.id) {
-      return {
+    try {
+      // Check if email is already taken by another user
+      if (email !== user.email) {
+        const existingUser = await User.findOne({ 
+          email, 
+          _id: { $ne: user._id } 
+        }).exec();
+
+        if (existingUser) {
+          return {
+            error: 'Email is already taken.',
+            name,
+            email
+          };
+        }
+      }
+
+      await User.findByIdAndUpdate(user._id, {
         name,
         email,
-        error: 'Email is already in use.'
+        updatedAt: new Date()
+      });
+
+      await logActivity(user._id.toString(), ActivityType.UPDATE_ACCOUNT);
+
+      return {
+        success: 'Account updated successfully.',
+        name,
+        email
+      };
+    } catch (error) {
+      console.error('Update account error:', error);
+      return {
+        error: 'Failed to update account. Please try again.',
+        name,
+        email
+      };
+    }
+  }
+);
+
+const deleteAccountSchema = z.object({
+  confirmDelete: z.string()
+});
+
+export const deleteAccount = validatedActionWithUser(
+  deleteAccountSchema,
+  async (data, _, user) => {
+    const { confirmDelete } = data;
+
+    if (confirmDelete !== 'DELETE') {
+      return {
+        error: 'Please type DELETE to confirm.',
+        confirmDelete
       };
     }
 
-    await Promise.all([
-      db.update(users).set({ name, email }).where(eq(users.id, user.id)),
-      logActivity(user.id, ActivityType.UPDATE_ACCOUNT)
-    ]);
+    await connectDB();
 
-    return {
-      success: 'Account updated successfully.'
-    };
+    try {
+      await User.findByIdAndUpdate(user._id, {
+        deletedAt: new Date()
+      });
+
+      await logActivity(user._id.toString(), ActivityType.DELETE_ACCOUNT);
+
+      (await cookies()).delete('session');
+      redirect('/sign-in');
+    } catch (error) {
+      console.error('Delete account error:', error);
+      return {
+        error: 'Failed to delete account. Please try again.',
+        confirmDelete
+      };
+    }
   }
 );

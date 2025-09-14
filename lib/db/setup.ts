@@ -1,10 +1,7 @@
-import { exec } from 'node:child_process';
 import { promises as fs } from 'node:fs';
-import { promisify } from 'node:util';
 import crypto from 'node:crypto';
 import path from 'node:path';
-
-const execAsync = promisify(exec);
+import connectDB from './mongodb';
 
 function generateAuthSecret(): string {
   console.log('Step 1: Generating AUTH_SECRET...');
@@ -21,35 +18,33 @@ async function writeEnvFile(envVars: Record<string, string>) {
   console.log('.env file created with the necessary variables.');
 }
 
-async function runMigrations() {
-  console.log('Step 3: Running database migrations...');
+async function testDatabaseConnection() {
+  console.log('Step 3: Testing MongoDB connection...');
   try {
-    await execAsync('npm run db:generate');
-    console.log('Database migrations generated.');
-    await execAsync('npm run db:migrate');
-    console.log('Database migrations applied.');
+    await connectDB();
+    console.log('✅ MongoDB connection successful.');
   } catch (error) {
-    console.error('Failed to run migrations:', error);
+    console.error('❌ Failed to connect to MongoDB:', error);
     throw error;
   }
 }
 
 async function main() {
-  console.log('🚀 Setting up Sharing Application Database...');
+  console.log('🚀 Setting up ShikshaGuru Application Database...');
   
-  const POSTGRES_URL = 'postgresql://postgres:uWknDsBF@127.0.0.1:5432/postgres';
+  const MONGO_URI = 'mongodb://admin:JtlsfYlv@127.0.0.1:27017/shikshaguru?authSource=admin';
   const BASE_URL = 'http://localhost:3000';
   const AUTH_SECRET = generateAuthSecret();
 
   await writeEnvFile({
-    POSTGRES_URL,
+    MONGO_URI,
     BASE_URL,
     AUTH_SECRET,
   });
 
-  await runMigrations();
+  await testDatabaseConnection();
 
-  console.log('🎉 Sharing Application setup completed successfully!');
+  console.log('🎉 ShikshaGuru Application setup completed successfully!');
   console.log('You can now run: npm run dev');
 }
 

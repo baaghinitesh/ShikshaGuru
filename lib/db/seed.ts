@@ -1,22 +1,28 @@
-import { db } from './drizzle';
-import { users } from './schema';
+import connectDB from './mongodb';
+import { User } from './models';
 import { hashPassword } from '@/lib/auth/session';
 
 async function seed() {
+  await connectDB();
+
   const email = 'test@test.com';
   const password = 'admin123';
   const passwordHash = await hashPassword(password);
 
-  const [user] = await db
-    .insert(users)
-    .values([
-      {
-        email: email,
-        passwordHash: passwordHash,
-        name: 'Test User',
-      },
-    ])
-    .returning();
+  // Check if user already exists
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    console.log('Test user already exists, skipping creation.');
+    return;
+  }
+
+  const user = new User({
+    email: email,
+    passwordHash: passwordHash,
+    name: 'Test User',
+  });
+
+  await user.save();
 
   console.log('Initial user created.');
   console.log('Seed data created successfully.');

@@ -1,10 +1,11 @@
-import { desc, and, eq, isNull } from 'drizzle-orm';
-import { db } from './drizzle';
-import { activityLogs, users } from './schema';
+import connectDB from './mongodb';
+import { User, ActivityLog, type IUser, type IActivityLog } from './models';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth/session';
 
-export async function getUser() {
+export async function getUser(): Promise<IUser | null> {
+  await connectDB();
+  
   const sessionCookie = (await cookies()).get('session');
   if (!sessionCookie || !sessionCookie.value) {
     return null;
@@ -14,7 +15,7 @@ export async function getUser() {
   if (
     !sessionData ||
     !sessionData.user ||
-    typeof sessionData.user.id !== 'number'
+    typeof sessionData.user.id !== 'string'
   ) {
     return null;
   }
@@ -23,37 +24,44 @@ export async function getUser() {
     return null;
   }
 
-  const user = await db
-    .select()
-    .from(users)
-    .where(and(eq(users.id, sessionData.user.id), isNull(users.deletedAt)))
-    .limit(1);
+  try {
+    const user = await User.findOne({
+      _id: sessionData.user.id,
+      deletedAt: null
+    }).exec();
 
-  if (user.length === 0) {
+    return user;
+  } catch (error) {
+    console.error('Error fetching user:', error);
     return null;
   }
-
-  return user[0];
 }
 
 export async function getActivityLogs() {
+  await connectDB();
+  
   const user = await getUser();
   if (!user) {
     throw new Error('User not authenticated');
   }
 
-  return await db
-    .select({
-      id: activityLogs.id,
-      action: activityLogs.action,
-      timestamp: activityLogs.timestamp,
-      ipAddress: activityLogs.ipAddress,
-      metadata: activityLogs.metadata,
-      userName: users.name
-    })
-    .from(activityLogs)
-    .leftJoin(users, eq(activityLogs.userId, users.id))
-    .where(eq(activityLogs.userId, user.id))
-    .orderBy(desc(activityLogs.timestamp))
-    .limit(10);
+  try {
+    const logs = await ActivityLog.find({ userId: user._id })
+      .populate('userId', 'name')
+      .sort({ timestamp: -1 })
+      .limit(10)
+      .exec();
+
+    return logs.map(log => ({
+      id: log._id.toString(),
+      action: log.action,
+      timestamp: log.timestamp,
+      ipAddress: log.ipAddress,
+      metadata: log.metadata,
+      userName: (log.userId as any)?.name || null
+    }));
+  } catch (error) {
+    console.error('Error fetching activity logs:', error);
+    throw error;
+  }
 }

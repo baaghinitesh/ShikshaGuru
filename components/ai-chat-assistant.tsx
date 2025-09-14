@@ -79,17 +79,22 @@ const AIChatAssistant: React.FC = () => {
   };
 
   const initializeConversation = async () => {
+    console.log('🤖 Initializing AI conversation...');
     setIsLoading(true);
     try {
+      console.log('🤖 Calling apiClient.startAIConversation...');
       const response = await apiClient.startAIConversation({});
+      console.log('🤖 API Response:', response);
       
       if (response.success) {
+        console.log('🤖 Setting conversation data:', response.data);
         setConversation(response.data);
       } else {
+        console.error('🤖 API returned success=false:', response);
         toast.error('Failed to start AI assistant');
       }
     } catch (error) {
-      console.error('Error initializing AI conversation:', error);
+      console.error('🤖 Error initializing AI conversation:', error);
       toast.error('Failed to start AI assistant');
     } finally {
       setIsLoading(false);
@@ -100,22 +105,27 @@ const AIChatAssistant: React.FC = () => {
     if (!conversation || !inputMessage.trim()) return;
 
     const messageContent = inputMessage.trim();
+    console.log('🤖 Sending message:', messageContent);
     setInputMessage('');
     setIsTyping(true);
 
     try {
+      console.log('🤖 Calling API with:', { message: messageContent, conversationId: conversation.id });
       const response = await apiClient.startAIConversation({
         message: messageContent,
         conversationId: conversation.id
       });
+      console.log('🤖 Send message response:', response);
       
       if (response.success) {
+        console.log('🤖 Updating conversation with new data');
         setConversation(response.data);
       } else {
+        console.error('🤖 Send failed:', response);
         toast.error('Failed to send message');
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('🤖 Error sending message:', error);
       toast.error('Failed to send message');
     } finally {
       setIsTyping(false);
@@ -240,13 +250,20 @@ const AIChatAssistant: React.FC = () => {
     );
   };
 
+  // Add debugging logs
+  console.log('🤖 AI Chat Component State:', { isOpen, conversation, isLoading, inputMessage });
+
   // Don't render if not open
   if (!isOpen) {
     return (
       <Button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 z-50"
+        onClick={() => {
+          console.log('🤖 AI Chat button clicked!');
+          setIsOpen(true);
+        }}
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 z-50 bg-blue-600 hover:bg-blue-700"
         size="lg"
+        title="AI Assistant - Click to Chat"
       >
         <MessageCircle className="w-6 h-6" />
       </Button>
@@ -323,8 +340,16 @@ const AIChatAssistant: React.FC = () => {
                 <div ref={messagesEndRef} />
               </>
             ) : (
-              <div className="flex items-center justify-center h-32">
-                <p className="text-muted-foreground">Failed to load conversation</p>
+              <div className="flex flex-col items-center justify-center h-32 space-y-2">
+                <p className="text-muted-foreground">Failed to load AI conversation</p>
+                <Button 
+                  onClick={initializeConversation} 
+                  size="sm" 
+                  variant="outline"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Retrying...' : 'Retry'}
+                </Button>
               </div>
             )}
           </div>
@@ -341,7 +366,10 @@ const AIChatAssistant: React.FC = () => {
                 className="flex-1"
               />
               <Button
-                onClick={handleSendMessage}
+                onClick={() => {
+                  console.log('🤖 Send button clicked!', { inputMessage, conversation });
+                  handleSendMessage();
+                }}
                 disabled={!inputMessage.trim() || isLoading || isTyping}
                 size="sm"
               >

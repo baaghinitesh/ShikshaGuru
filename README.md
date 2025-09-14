@@ -14,8 +14,8 @@ This is a starter template for building a application using **Next.js** with sup
 ## Tech Stack
 
 - **Framework**: [Next.js](https://nextjs.org/)
-- **Database**: [Postgres](https://www.postgresql.org/)
-- **ORM**: [Drizzle](https://orm.drizzle.team/)
+- **Database**: [MongoDB](https://www.mongodb.com/)
+- **ORM**: [Mongoose](https://mongoosejs.com/)
 - **UI Library**: [shadcn/ui](https://ui.shadcn.com/)
 
 ## Getting Started
